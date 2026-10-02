@@ -208,12 +208,12 @@ curl http://127.0.0.1:8000/docs</pre>
         <tr><td><code>python -m ruff check --select E4,E7,E9,F src api tests</code></td><td class="check">PASS · All checks passed</td><td>Source, API and tests</td></tr>
         <tr><td>Docker image build</td><td class="check">PASS · image built</td><td><code>heart-disease-api:latest</code></td></tr>
         <tr><td>Docker health / prediction / metrics</td><td class="check">PASS · HTTP 200</td><td>Running container on localhost:8000</td></tr>
-        <tr><td>GitHub Actions run #5</td><td class="check">PASS · all steps</td><td><a href="https://github.com/priyansh1114/MLops/actions/runs/36994091669">Workflow run</a> · <a href="https://github.com/priyansh1114/MLops/actions/runs/36994091669/artifacts/11220853501">download artifact</a></td></tr>
+        <tr><td>GitHub Actions run #6</td><td class="check">PASS · all steps</td><td><a href="https://github.com/priyansh1114/MLops/actions/runs/36998668363">Workflow run</a> · <a href="https://github.com/priyansh1114/MLops/actions/runs/36998668363/artifacts/11221899318">download artifact</a></td></tr>
       </tbody>
     </table>
     <figure><img class="screenshot" style="max-height:125px" src="screenshots/github-actions-run.png" alt="GitHub Actions run completed successfully"><figcaption>Hosted CI run #4: lint, tests, model training, EDA and artifact upload all succeeded.</figcaption></figure>
     <p>The initial hosted run exposed missing pytest imports; <code>pytest.ini</code> now adds the repository root and <code>src</code> to Python's import path. The latest successful hosted run emitted a runner/action Node-version deprecation notice; it did not fail the workflow.</p>
-    <div class="note">Reproduce the quality gates from the project root with the Ruff command above followed by <code>python -m pytest -q</code>. Hosted run #5 uploaded the <a href="https://github.com/priyansh1114/MLops/actions/runs/36994091669/artifacts/11220853501">heart-disease-mlops-artifacts</a> bundle. The included screenshot records the earlier successful run #4.</div>
+    <div class="note">Reproduce the quality gates from the project root with the Ruff command above followed by <code>python -m pytest -q</code>. Hosted run #6 uploaded the <a href="https://github.com/priyansh1114/MLops/actions/runs/36998668363/artifacts/11221899318">heart-disease-mlops-artifacts</a> bundle. The included screenshot records a prior successful run #4.</div>
     <div class="footer"><span>GitHub Actions · lint · tests · training artifacts</span><span>7 / 10</span></div>
   </section>
 
@@ -278,7 +278,7 @@ heart_disease_api_request_duration_seconds_count{method="POST",route="/predict"}
         <tr><td>2. Feature engineering &amp; modeling</td><td class="check">Implemented</td><td>Leakage-aware preprocessing, two grid-searched models, five-fold CV and metrics</td></tr>
         <tr><td>3. Experiment tracking</td><td class="check">Implemented</td><td>Nested MLflow runs with parameters, metrics, artifacts and plots</td></tr>
         <tr><td>4. Packaging &amp; reproducibility</td><td class="check">Implemented</td><td>Serialized full pipeline, requirements, inference command</td></tr>
-        <tr><td>5. CI/CD &amp; testing</td><td class="check">Implemented / hosted run passed</td><td>GitHub Actions #5, Ruff, 5 pytest tests, training and artifact upload</td></tr>
+        <tr><td>5. CI/CD &amp; testing</td><td class="check">Implemented / hosted run passed</td><td>GitHub Actions #6, Ruff, 5 pytest tests, training and artifact upload</td></tr>
         <tr><td>6. Model containerization</td><td class="check">Built, started &amp; verified</td><td>Dockerfile, live API and captured screenshots</td></tr>
         <tr><td>7. Production deployment</td><td class="check">Local Kubernetes deployed</td><td>Two ready replicas; Service and API verified; no public cloud URL</td></tr>
         <tr><td>8. Monitoring &amp; logging</td><td class="check">Implemented / verified</td><td>Privacy-aware request logs and Prometheus counters/histogram</td></tr>
