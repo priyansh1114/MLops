@@ -4,7 +4,10 @@
 
 **Assignment:** 01, End-to-End ML Model Development and Deployment
 
-**Project status:** Implementation, local tests, Docker build/run, Docker Desktop Kubernetes deployment, API checks, GitHub Actions, and deployment screenshots are complete. The requested user-recorded video is still not available.
+**Submitted by:** Pryanshu Tipathi<br>
+**BITS ID:** 2025ae05230
+
+**Project status:** Assignment points 1–9 and all written, code, data, deployment, and screenshot deliverables are implemented and verified. The requested end-to-end video is the only deliverable not included.
 
 ## Executive summary
 
@@ -41,6 +44,24 @@ CV entries are means over five folds; the full mean and standard deviation value
 
 The holdout set is small, so individual examples can materially change the reported metrics. There is no external validation cohort, confidence interval for holdout metrics, prospective evaluation, or subgroup fairness analysis. The test-set figures should be interpreted as a reproducible benchmark for this assignment, not as a reliable estimate of future clinical performance.
 
+### Libraries and methods
+
+Versions below were verified in the local Python 3.12 project environment. `requirements.txt` specifies supported minimum versions rather than a fully pinned lock.
+
+| Library (version) | Methods and role |
+| --- | --- |
+| pandas 3.0.6; NumPy 2.5.3 | `pd.read_csv(na_values="?")`, `pd.to_numeric`, DataFrame feature tables, CV result tables |
+| scikit-learn 1.9.1 | `ColumnTransformer`, `Pipeline`, `SimpleImputer`, `StandardScaler`, `OneHotEncoder`; stratified `train_test_split` and `StratifiedKFold`; `GridSearchCV`; `LogisticRegression`, `RandomForestClassifier`, accuracy/precision/recall/F1/ROC-AUC metrics and confusion-matrix/ROC displays |
+| MLflow 3.16.1; joblib 1.6.0 | `set_tracking_uri`, `set_experiment`, nested `start_run`, `log_params`, `log_metrics`, `log_artifact(s)`, `joblib.dump/load` |
+| Matplotlib 3.11.2; Seaborn 0.13.2 | Feature histograms, `sns.heatmap`, `sns.barplot`, confusion-matrix and ROC plots |
+| FastAPI 0.142.2; Pydantic 2.13.5; Uvicorn 0.54.0 | `@app.get/post` routes, `@app.middleware("http")`, `BaseModel`, `Field` range validation, ASGI serving |
+| prometheus-client 0.26.0 | `Counter`, `Histogram`, `generate_latest` for request and latency instrumentation |
+| pytest 9.1.1; Ruff 0.16.10 | `TestClient` API tests, data/preprocessor tests, Ruff E4/E7/E9/F static checks |
+
+### Training and evaluation procedure
+
+`train_best_model()` uses a stratified 80/20 holdout split (`random_state=42`) and five-fold `StratifiedKFold(shuffle=True, random_state=42)` within `GridSearchCV`. Each candidate is an sklearn `Pipeline`, so fold-specific imputers, scaler, and one-hot encoder are fit only on each fold's training rows. Accuracy, precision, recall, and ROC-AUC are scored; `refit="roc_auc"` chooses candidate parameters. The independent holdout set is used to report accuracy, precision, recall, F1, ROC-AUC and confusion-matrix/ROC diagnostics. The final model is the candidate with the higher mean CV ROC-AUC.
+
 ## 4. Experiment tracking and model packaging
 
 Training creates an MLflow experiment named `heart_disease_prediction` under the local `mlruns/` directory. The run hierarchy records each model's parameters, cross-validation means and standard deviations, held-out metrics, serialized model artifact, grid-search table, and confusion-matrix/ROC diagnostics. The command `python -m src.heart_disease_mlop.train_model` repeats the split and search with the fixed seed and writes `artifacts/best_model.joblib`, per-model joblib files, evaluation artifacts, and `artifacts/training_summary.json`.
@@ -59,7 +80,7 @@ Install dependencies from `requirements.txt`. The README documents Python 3.12 s
 
 The request middleware logs method, route, status, and duration. It deliberately does not log patient feature values. Pydantic constraints reject out-of-range coded values and negative measurements. The unit tests exercise health, prediction response shape, and metric exposure; data-pipeline tests cover data preparation behavior.
 
-The GitHub Actions workflow installs the declared dependencies, runs Ruff checks and pytest, then trains a model and generates EDA outputs. It uploads artifacts and MLflow files even when earlier steps fail, where available. The workflow is configured for pushes and pull requests to `main` and `master`. The first hosted run failed test collection because the project root and `src` were not on pytest's import path; `pytest.ini` now declares both paths. Corrected run [#3 passed](https://github.com/priyansh1114/MLops/actions/runs/36990342754), including lint, all five tests, model training, EDA, and artifact upload. Its [heart-disease-mlops-artifacts bundle](https://github.com/priyansh1114/MLops/actions/runs/36990342754/artifacts/11219112502) is retained until 16 October 2026. A screenshot of the completed Actions run is in `screenshots/github-actions-run.png`.
+The GitHub Actions workflow installs the declared dependencies, runs Ruff checks and pytest, trains the models and generates EDA outputs, then uploads artifacts. It is configured for pushes and pull requests to `main` and `master`. The first hosted run exposed missing pytest import paths; `pytest.ini` now adds both the project root and `src`. Hosted run [#4 passed](https://github.com/priyansh1114/MLops/actions/runs/36990648145), including lint, all five tests, training, EDA and artifact upload. The [heart-disease-mlops-artifacts bundle](https://github.com/priyansh1114/MLops/actions/runs/36990648145/artifacts/11218948203) is retained until 16 October 2026. Its screenshot is `screenshots/github-actions-run.png`.
 
 ## 6. Architecture
 
@@ -91,7 +112,7 @@ The `Dockerfile` uses Python 3.12 slim, installs `requirements.txt`, copies the 
 
 **Verified Kubernetes deployment:** Docker Desktop Kubernetes context `docker-desktop` was configured and its node reached `Ready`. The `heart-disease-api` Deployment reached 2/2 available replicas; the LoadBalancer Service was assigned cluster address `172.18.0.5`. This cluster has a separate containerd image store, so the local image was imported into Kubernetes containerd and the manifest uses `imagePullPolicy: Never`. Through `kubectl port-forward service/heart-disease-api 8080:80`, `/health` returned `{"status":"ok","model_loaded":true}` and a sample `/predict` returned prediction 1 with probability/confidence 0.7242. Screenshots are saved in `screenshots/`.
 
-The API metrics endpoint works, but no Prometheus/Grafana server was launched. The requested short pipeline video still needs to be recorded if required. No public URL is claimed. Do not publish patient data in screenshots or logs.
+The verified API request logs and Prometheus metrics cover the assignment's simple metrics/logs monitoring option; no separate Grafana server was launched. No public URL is claimed. The requested user-recorded pipeline video is the only outstanding deliverable. Do not publish patient data in screenshots or logs.
 
 ## 8. Reproduction and verification procedure
 
@@ -112,7 +133,7 @@ The Docker build, local container checks, and Docker Desktop Kubernetes rollout 
 
 The Cleveland dataset is small, historical, and not established as representative of the intended deployment population. There is no data governance assessment, clinical validation, calibration study, decision-threshold analysis, fairness evaluation, drift detection, alerting policy, or human review workflow. Prometheus endpoint instrumentation provides request volume and latency signals, but it is not a complete monitoring system: it does not measure model quality or data drift and no Grafana dashboard is supplied.
 
-Before any real-world use, the project would require an appropriately governed and representative dataset, clinical and regulatory review, independent validation, calibration and subgroup analyses, privacy/security review, a defined human decision process, and ongoing monitoring with tested rollback procedures. For assignment submission, record the requested short pipeline video if required. The 10-page PDF report, local Docker and Kubernetes screenshots, hosted CI run URL, and run artifact are provided.
+Before any real-world use, the project would require an appropriately governed and representative dataset, clinical and regulatory review, independent validation, calibration and subgroup analyses, privacy/security review, a defined human decision process, and ongoing monitoring with tested rollback procedures. For assignment submission, record the requested short pipeline video. The 10-page PDF embeds all captured Docker, Kubernetes and CI screenshots, and the hosted CI run URL and artifact are provided.
 
 ## 10. Artifact index
 
@@ -133,3 +154,5 @@ Before any real-world use, the project would require an appropriately governed a
 | `report.pdf`, `report.html` | Ten-page PDF submission and printable source |
 | `screenshots/` | Screenshots captured from the Docker API and Kubernetes deployment |
 | `pytest.ini` | Project and `src` import paths for local and CI tests |
+
+The requested GitHub Actions video is the only assignment deliverable omitted. The repository code, data, scripts, test suite, workflow, report, screenshots, Docker image, and local Kubernetes service have all been provided or verified.

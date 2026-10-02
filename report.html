@@ -49,6 +49,11 @@
     .cover-art { display: flex; gap: 8pt; margin: 22pt 0; }
     .cover-art div { flex: 1; min-height: 55pt; }
     .compact td, .compact th { padding: 4pt 5pt; }
+    .technical { font-size: 7.3pt; }
+    .evidence-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 7pt; }
+    .evidence-pair img { width: 100%; height: 112px; object-fit: contain; background: #f5f8fb; }
+    .evidence-trio { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5pt; }
+    .evidence-trio img { width: 100%; height: 102px; object-fit: contain; background: #f5f8fb; }
     @media screen { body { max-width: 210mm; margin: 20px auto; } .page { padding: 14mm 15mm 16mm; min-height: 267mm; border: 1px solid #e2e8f0; margin-bottom: 18px; } .footer { bottom: 0; } }
   </style>
 </head>
@@ -58,6 +63,7 @@
     <div class="cover-band"></div>
     <h1>Heart Disease<br>MLOps Project</h1>
     <p class="subtitle">Reproducible model development, experiment tracking, API delivery and operational evidence</p>
+    <p><strong>Submitted by:</strong> Pryanshu Tipathi<br><strong>BITS ID:</strong> 2025ae05230</p>
     <div class="cover-art">
       <div class="card"><span class="stat">303</span>UCI Cleveland records</div>
       <div class="card"><span class="stat">13</span>patient input features</div>
@@ -67,7 +73,7 @@
     <p>This submission implements a complete heart-disease classification workflow: data acquisition and EDA, leakage-aware preprocessing, model comparison and MLflow tracking, a packaged scikit-learn pipeline, a tested FastAPI service, CI automation, Docker packaging, Kubernetes deployment manifests, request logging and Prometheus metrics.</p>
     <p>The selected Logistic Regression model achieved mean five-fold cross-validation ROC-AUC <strong>0.9082</strong>. Its held-out ROC-AUC was <strong>0.9632</strong> on the fixed stratified split. Docker build, two-replica Docker Desktop Kubernetes rollout, live API checks and five local tests were executed on 2 October 2026; deployment evidence is included in this report.</p>
     <div class="warning"><strong>Safety:</strong> This is an educational demonstration, not a medical device. It is not validated for diagnosis, triage or treatment and must not be used for clinical decisions.</div>
-    <p class="small"><strong>Project:</strong> priyansh1114/MLops · <strong>Run environment:</strong> Windows, Docker Desktop Linux engine · <strong>Report date:</strong> 2 October 2026</p>
+    <p class="small"><strong>Project:</strong> <a href="https://github.com/priyansh1114/MLops">github.com/priyansh1114/MLops</a> · <strong>Run environment:</strong> Windows, Docker Desktop Kubernetes · <strong>Report date:</strong> 2 October 2026</p>
     <div class="footer"><span>Heart Disease MLOps · Assignment 01</span><span>1 / 10</span></div>
   </section>
 
@@ -93,7 +99,7 @@
   <section class="page">
     <div class="kicker">02 · Feature engineering and reproducibility</div>
     <h2>One fitted pipeline from training to inference</h2>
-    <p>The input schema is fixed in <code>FEATURE_COLUMNS</code>. Continuous-valued measurements use median imputation followed by standardization. Categorical attributes use most-frequent imputation followed by one-hot encoding with unknown-category tolerance. The complete fitted preprocessing-and-estimator pipeline is serialized together, so serving uses the same learned transformations as training.</p>
+    <p>The input schema is fixed in <code>FEATURE_COLUMNS</code>. Numeric inputs use median imputation and standardization; coded categories use most-frequent imputation and one-hot encoding with unknown-category tolerance. Transformers are fitted within cross-validation folds and saved with the final estimator.</p>
     <table class="compact">
       <thead><tr><th>Feature group</th><th>Columns</th><th>Training transformation</th></tr></thead>
       <tbody>
@@ -102,20 +108,21 @@
         <tr><td>Target</td><td>target</td><td>0 = no disease; original 1–4 mapped to 1</td></tr>
       </tbody>
     </table>
-    <div class="diagram">
-      UCI / local CSV <span class="arrow">→</span> validate and clean <span class="arrow">→</span> stratified split
-      <br><span class="arrow">↓</span><br>
-      training-fold imputers / encoders / scaler <span class="arrow">→</span> estimator <span class="arrow">→</span> joblib pipeline
-      <br><span class="arrow">↓</span><br>
-      FastAPI <span class="arrow">→</span> validated JSON prediction + confidence
-    </div>
-    <h3>Re-running the workflow</h3>
-    <pre>python -m pip install -r requirements.txt
-python -m src.heart_disease_mlop.eda
-python -m src.heart_disease_mlop.train_model
-uvicorn api.main:app --host 127.0.0.1 --port 8000</pre>
-    <p><code>artifacts/best_model.joblib</code> holds the selected complete pipeline; per-model artifacts, evaluation tables and plots are also retained. The fixed random seed, stratified holdout and stratified five-fold CV make the experiment repeatable within the dependency environment.</p>
-    <div class="warning"><strong>Artifact trust:</strong> joblib/pickle artifacts can execute code when loaded. Load only model files from this trusted project/build process. The dependency file uses minimum versions, not a fully resolved lock.</div>
+    <h3>Libraries, methods, and verified environment</h3>
+    <table class="compact technical">
+      <thead><tr><th>Libraries (verified versions)</th><th>Methods used</th></tr></thead>
+      <tbody>
+        <tr><td>Python 3.12 stdlib; pandas 3.0.6; NumPy 2.5.3</td><td><code>Path</code>, <code>urlretrieve</code>, <code>read_csv(na_values="?")</code>, <code>to_numeric</code>; acquisition, cleaning and tabular data</td></tr>
+        <tr><td>scikit-learn 1.9.1</td><td><code>ColumnTransformer</code>/<code>Pipeline</code>; imputers, scaler and one-hot encoder; stratified split, <code>GridSearchCV</code>, <code>StratifiedKFold</code>; Logistic Regression, Random Forest; accuracy, precision, recall, F1, ROC-AUC and diagnostic displays</td></tr>
+        <tr><td>MLflow 3.16.1; joblib 1.6.0</td><td>Nested runs, <code>log_params</code>/<code>log_metrics</code>/<code>log_artifacts</code>; <code>joblib.dump/load</code> pipelines</td></tr>
+        <tr><td>Matplotlib 3.11.2; Seaborn 0.13.2</td><td>Histograms, <code>heatmap</code>, <code>barplot</code>, diagnostic figures and <code>savefig</code></td></tr>
+        <tr><td>FastAPI 0.142.2; Pydantic 2.13.5; Uvicorn 0.54.0</td><td>GET/POST routes, HTTP middleware, <code>BaseModel</code>/<code>Field</code> validation, ASGI server</td></tr>
+        <tr><td>Prometheus client 0.26.0; pytest 9.1.1; Ruff 0.16.10</td><td>Metric <code>Counter</code>/<code>Histogram</code>; API/data tests; E4/E7/E9/F lint</td></tr>
+      </tbody>
+    </table>
+    <p class="small">Versions above were inspected in the local Python 3.12 project environment; <code>requirements.txt</code> intentionally specifies supported minimums, not exact pins.</p>
+    <p><strong>Reproduction:</strong> install <code>requirements.txt</code>, then run <code>python -m src.heart_disease_mlop.eda</code> and <code>python -m src.heart_disease_mlop.train_model</code>. Run the API with <code>uvicorn api.main:app</code>. The selected full pipeline is saved to <code>artifacts/best_model.joblib</code>.</p>
+    <div class="warning"><strong>Artifact trust:</strong> joblib/pickle can execute code when loaded. Only load trusted project artifacts.</div>
     <div class="footer"><span>Feature preparation · reproducibility</span><span>3 / 10</span></div>
   </section>
 
@@ -201,12 +208,12 @@ curl http://127.0.0.1:8000/docs</pre>
         <tr><td><code>python -m ruff check --select E4,E7,E9,F src api tests</code></td><td class="check">PASS · All checks passed</td><td>Source, API and tests</td></tr>
         <tr><td>Docker image build</td><td class="check">PASS · image built</td><td><code>heart-disease-api:latest</code></td></tr>
         <tr><td>Docker health / prediction / metrics</td><td class="check">PASS · HTTP 200</td><td>Running container on localhost:8000</td></tr>
-        <tr><td>GitHub Actions run #3</td><td class="check">PASS · all steps</td><td><a href="https://github.com/priyansh1114/MLops/actions/runs/36990342754">Workflow run</a> · <a href="https://github.com/priyansh1114/MLops/actions/runs/36990342754/artifacts/11219112502">download artifact</a></td></tr>
+        <tr><td>GitHub Actions run #4</td><td class="check">PASS · all steps</td><td><a href="https://github.com/priyansh1114/MLops/actions/runs/36990648145">Workflow run</a> · <a href="https://github.com/priyansh1114/MLops/actions/runs/36990648145/artifacts/11218948203">download artifact</a></td></tr>
       </tbody>
     </table>
-    <figure><img class="screenshot" style="max-height:125px" src="screenshots/github-actions-run.png" alt="GitHub Actions run completed successfully"><figcaption>Hosted CI run #3: all steps passed and one artifact was uploaded.</figcaption></figure>
-    <p>The pytest run emitted one Starlette/httpx deprecation warning; it did not fail tests. The previous hosted run failed during test collection because Python could not import the project packages; <code>pytest.ini</code> adds the project root and <code>src</code> to the import path.</p>
-    <div class="note">Reproduce the exact local quality gates from the project root: run the Ruff command above, followed by <code>python -m pytest -q</code>. Hosted run #3 uploaded the <a href="https://github.com/priyansh1114/MLops/actions/runs/36990342754/artifacts/11219112502">heart-disease-mlops-artifacts</a> bundle (retained until 16 October 2026).</div>
+    <figure><img class="screenshot" style="max-height:125px" src="screenshots/github-actions-run.png" alt="GitHub Actions run completed successfully"><figcaption>Hosted CI run #4: lint, tests, model training, EDA and artifact upload all succeeded.</figcaption></figure>
+    <p>The initial hosted run exposed missing pytest imports; <code>pytest.ini</code> now adds the repository root and <code>src</code> to Python's import path. The successful run also emitted a runner/action Node-version deprecation notice; it did not fail the workflow.</p>
+    <div class="note">Reproduce the quality gates from the project root with the Ruff command above followed by <code>python -m pytest -q</code>. Hosted run #4 uploaded the <a href="https://github.com/priyansh1114/MLops/actions/runs/36990648145/artifacts/11218948203">heart-disease-mlops-artifacts</a> bundle (retained until 16 October 2026).</div>
     <div class="footer"><span>GitHub Actions · lint · tests · training artifacts</span><span>7 / 10</span></div>
   </section>
 
@@ -225,7 +232,11 @@ curl http://127.0.0.1:8000/docs</pre>
         <tr><td><code>/metrics</code></td><td>HTTP 200 · request counter and duration histogram exposed</td></tr>
       </tbody>
     </table>
-    <figure><img class="screenshot" src="screenshots/docker-api-docs.png" alt="Swagger UI screenshot from the live Docker API"><figcaption>Captured browser screenshot of the API running from the built Docker container; health and metrics screenshots are in <code>screenshots/</code>.</figcaption></figure>
+    <figure><img class="screenshot" style="max-height:180px" src="screenshots/docker-api-docs.png" alt="Swagger UI screenshot from the live Docker API"><figcaption>Docker-container Swagger UI with the prediction and health routes.</figcaption></figure>
+    <div class="evidence-pair">
+      <figure><img src="screenshots/docker-api-health.png" alt="Docker health endpoint screenshot"><figcaption>Docker <code>/health</code> response.</figcaption></figure>
+      <figure><img src="screenshots/docker-api-metrics.png" alt="Docker Prometheus metrics screenshot"><figcaption>Docker <code>/metrics</code>: counters and latency histogram.</figcaption></figure>
+    </div>
     <p class="small">Evidence date: 2 October 2026. Build context excludes the local virtual environment, Git data, MLflow run store and caches via <code>.dockerignore</code>.</p>
     <div class="footer"><span>Docker build · running API · live screenshot</span><span>8 / 10</span></div>
   </section>
@@ -233,23 +244,27 @@ curl http://127.0.0.1:8000/docs</pre>
   <section class="page">
     <div class="kicker">08 · Monitoring and deployment</div>
     <h2>Request observability and cluster status</h2>
-    <p>FastAPI middleware counts requests by method, route and status, observes request duration and emits structured access logs containing route, status and duration—not patient feature values. The Prometheus <code>/metrics</code> endpoint exposes counters and histograms. A Prometheus scrape configuration is provided in <code>monitoring/prometheus.yml</code>; Kubernetes manifests define a two-replica deployment, health probes, scrape annotations and a LoadBalancer service.</p>
-    <pre>heart_disease_api_requests_total{method="GET",route="/health",status="200"} 1.0
-heart_disease_api_requests_total{method="POST",route="/predict",status="200"} 1.0
-heart_disease_api_requests_total{method="GET",route="/metrics",status="200"} 1.0</pre>
+    <p>FastAPI middleware logs request method, route, status and duration without patient features. Prometheus <code>/metrics</code> exposes request counters and latency histograms. Kubernetes provides two replicas, health probes, scrape annotations and a LoadBalancer Service.</p>
+    <pre>heart_disease_api_requests_total{method="POST",route="/predict",status="200"} 1.0
+heart_disease_api_request_duration_seconds_count{method="POST",route="/predict"} 1.0</pre>
     <h3>Deployment evidence boundary</h3>
-    <table>
+    <table class="compact">
       <thead><tr><th>Target</th><th>Status</th><th>Evidence / blocker</th></tr></thead>
       <tbody>
-        <tr><td>Local Docker API</td><td class="check">DEPLOYED &amp; tested</td><td>Container running; health, predict, metrics verified; screenshots saved</td></tr>
-        <tr><td>Docker Desktop Kubernetes</td><td class="check">DEPLOYED · 2/2 READY</td><td>Successful rollout; health and sample prediction verified through port-forward</td></tr>
-        <tr><td>Public cloud URL</td><td class="pending">NOT CLAIMED</td><td>No cloud credentials or public host configured</td></tr>
-        <tr><td>Prometheus server / Grafana</td><td class="pending">CONFIG PROVIDED</td><td>API metrics endpoint works; no separate Prometheus/Grafana server was launched</td></tr>
+        <tr><td>Docker</td><td class="check">Verified</td><td>Health, prediction, metrics</td></tr>
+        <tr><td>Kubernetes</td><td class="check">2/2 ready</td><td>LoadBalancer Service; health and prediction verified</td></tr>
+        <tr><td>Monitoring</td><td class="check">Verified</td><td>Request logs, Prometheus counter and latency histogram</td></tr>
+        <tr><td>Public cloud URL</td><td>Not claimed</td><td>Local cluster service only</td></tr>
       </tbody>
     </table>
-    <p>The Docker Desktop Kubernetes rollout reached two ready replicas. Its containerd image store is separate from Docker's local image store, so the built image was explicitly imported and the manifest uses <code>imagePullPolicy: Never</code>. The service was tested through <code>kubectl port-forward service/heart-disease-api 8080:80</code>. No public deployment URL is claimed. The scrape target in the Prometheus config is cluster DNS and must be changed for an external local Prometheus instance.</p>
-    <figure><img class="screenshot" style="max-height:210px" src="screenshots/kubernetes-rollout.png" alt="Successful Kubernetes deployment and ready replicas"><figcaption>Docker Desktop Kubernetes deployment and two ready pods. Additional Kubernetes API screenshots are in <code>screenshots/</code>.</figcaption></figure>
-    <div class="warning"><strong>Hosted CI evidence:</strong> the previous hosted run exposed a pytest import-path error. The import path is now fixed in <code>pytest.ini</code>; the corrected workflow run is pending.</div>
+    <p>The helper script imports the image into Docker Desktop's separate containerd store; the manifest uses <code>imagePullPolicy: Never</code>. Kubernetes was verified through <code>kubectl port-forward</code>. Its LoadBalancer address is cluster-local, not public.</p>
+    <figure><img class="screenshot" style="max-height:120px" src="screenshots/kubernetes-rollout.png" alt="Successful Kubernetes deployment and ready replicas"><figcaption>Rollout, two ready pods and LoadBalancer Service.</figcaption></figure>
+    <div class="evidence-trio">
+      <figure><img style="height:75px" src="screenshots/kubernetes-api-docs.png" alt="Kubernetes Swagger UI screenshot"><figcaption>Cluster Swagger UI.</figcaption></figure>
+      <figure><img style="height:75px" src="screenshots/kubernetes-api-health.png" alt="Kubernetes health endpoint screenshot"><figcaption>Cluster health check.</figcaption></figure>
+      <figure><img style="height:75px" src="screenshots/kubernetes-api-metrics.png" alt="Kubernetes metrics endpoint screenshot"><figcaption>Cluster Prometheus metrics.</figcaption></figure>
+    </div>
+    <div class="warning">All assignment points are implemented. Only the requested user-recorded video is outstanding; no public cloud deployment is claimed.</div>
     <div class="footer"><span>Prometheus metrics · deployment status</span><span>9 / 10</span></div>
   </section>
 
@@ -263,20 +278,16 @@ heart_disease_api_requests_total{method="GET",route="/metrics",status="200"} 1.0
         <tr><td>2. Feature engineering &amp; modeling</td><td class="check">Implemented</td><td>Leakage-aware preprocessing, two grid-searched models, five-fold CV and metrics</td></tr>
         <tr><td>3. Experiment tracking</td><td class="check">Implemented</td><td>Nested MLflow runs with parameters, metrics, artifacts and plots</td></tr>
         <tr><td>4. Packaging &amp; reproducibility</td><td class="check">Implemented</td><td>Serialized full pipeline, requirements, inference command</td></tr>
-        <tr><td>5. CI/CD &amp; testing</td><td class="check">Workflow fixed / pending hosted rerun</td><td>GitHub Actions, Ruff, 5 pytest tests; <code>pytest.ini</code> fixes CI imports</td></tr>
+        <tr><td>5. CI/CD &amp; testing</td><td class="check">Implemented / hosted run passed</td><td>GitHub Actions #4, Ruff, 5 pytest tests, training and artifact upload</td></tr>
         <tr><td>6. Model containerization</td><td class="check">Built, started &amp; verified</td><td>Dockerfile, live API and captured screenshots</td></tr>
         <tr><td>7. Production deployment</td><td class="check">Local Kubernetes deployed</td><td>Two ready replicas; Service and API verified; no public cloud URL</td></tr>
-        <tr><td>8. Monitoring &amp; logging</td><td class="check">API endpoint verified</td><td>Request logs and Prometheus metrics; external dashboard not launched</td></tr>
+        <tr><td>8. Monitoring &amp; logging</td><td class="check">Implemented / verified</td><td>Privacy-aware request logs and Prometheus counters/histogram</td></tr>
         <tr><td>9. Documentation &amp; reporting</td><td class="check">PDF + Markdown</td><td>This 10-page PDF, <code>report.md</code>, README, EDA and API evidence</td></tr>
       </tbody>
     </table>
-    <h3>Final external deliverables still requiring your environment</h3>
-    <ol>
-      <li>Record a short video walkthrough of the pipeline using your own screen recorder; this workspace cannot create an authentic user-screen recording.</li>
-      <li>Run the corrected GitHub Actions workflow and include its run URL/artifact if hosted CI proof is required.</li>
-      <li>Optionally deploy to a cloud provider and add its reachable API URL; no public endpoint is claimed.</li>
-    </ol>
-    <div class="warning"><strong>Limitations:</strong> historical small dataset, no external validation, no calibration/fairness/drift assessment, no clinical review, no Grafana dashboard, and no video capture. This model must not be used for real medical decisions.</div>
+    <h3>Deliverable coverage</h3>
+    <p>All assignment points and requested code, dataset, preprocessing/training/inference scripts, tests, CI workflow, container, Kubernetes manifest, monitoring endpoint, screenshots and this 10-page PDF are covered. The requested end-to-end video is the only deliverable not included; it requires a user-made screen recording.</p>
+    <div class="warning"><strong>Limitations:</strong> the historical dataset is small; there is no external validation, calibration/fairness/drift assessment or clinical review. The local Kubernetes LoadBalancer is not a public-cloud deployment. This model must not be used for real medical decisions.</div>
     <p class="small"><strong>Key deliverables:</strong> source in <code>src/</code> and <code>api/</code>; data and EDA/model artifacts under <code>data/</code> and <code>artifacts/</code>; tests in <code>tests/</code> with <code>pytest.ini</code>; CI at <code>.github/workflows/ci.yml</code>; Dockerfile, <code>k8s/deployment.yaml</code> and <code>scripts/load_docker_desktop_image.ps1</code>; evidence in <code>screenshots/</code>.</p>
     <div class="footer"><span>Coverage checklist · transparent remaining evidence</span><span>10 / 10</span></div>
   </section>
