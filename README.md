@@ -73,26 +73,30 @@ With Docker Desktop running:
 
 ```powershell
 docker build -t heart-disease-api .
-docker run --rm -p 8000:8000 heart-disease-api
+docker run --name heart-disease-api-local -p 8000:8000 heart-disease-api
 ```
 
 Open `http://localhost:8000/docs` for interactive API documentation. The container exposes port 8000 and starts the FastAPI app.
+Verify the deployed container with `http://localhost:8000/health`, `POST /predict`, and `http://localhost:8000/metrics`. To stop and remove the named container, run `docker rm -f heart-disease-api-local`.
 
 ## Kubernetes and monitoring
 
 The manifest in `k8s/deployment.yaml` creates two API replicas and a `LoadBalancer` service, with readiness/liveness probes. Make the image available to the chosen cluster, then:
 
 ```powershell
+.\scripts\load_docker_desktop_image.ps1
 kubectl apply -f k8s/deployment.yaml
-kubectl get pods,svc
+kubectl rollout status deployment/heart-disease-api --timeout=180s
+kubectl get deployment,pods,svc -o wide
+kubectl port-forward service/heart-disease-api 8080:80
 ```
 
-For Minikube, load the local image with `minikube image load heart-disease-api:latest` and use `minikube tunnel` to provision a local LoadBalancer address. `monitoring/prometheus.yml` contains a Prometheus scrape job for the API `/metrics` endpoint; update its target if Prometheus is outside the Kubernetes cluster.
+Open `http://localhost:8080/docs` while port forwarding is active to verify the Kubernetes-backed API. Docker Desktop Kubernetes uses a separate containerd image store in this setup; the PowerShell helper imports the local image into that runtime, and `imagePullPolicy: Never` prevents an unintended pull of a nonexistent public image. For Minikube, use `minikube image load heart-disease-api:latest` instead. `monitoring/prometheus.yml` contains a Prometheus scrape job for the API `/metrics` endpoint; update its target if Prometheus is outside the Kubernetes cluster.
 
 ## Assignment report and verification status
 
-See [report.md](report.md) for the measured experiment results, architecture, implementation details, and remaining evidence checklist. EDA outputs are under `artifacts/eda/`.
+See [report.pdf](report.pdf) for the 10-page submission report and [report.html](report.html) for its printable source. [report.md](report.md) contains the detailed technical report. EDA outputs are under `artifacts/eda/`, and live Docker API screenshots are in `screenshots/`.
 
-The source, tests, training workflow, EDA generation, and lint command have been exercised locally. A Docker daemon was unavailable and no Kubernetes context was configured during validation, so image build/run, cluster deployment, deployment screenshots, and a pipeline video are still evidence tasks to complete in an environment with Docker Desktop and a configured cluster. No public API URL is claimed.
+Local validation on 2 October 2026: all five tests passed, Ruff passed, and the Docker image and two-replica Docker Desktop Kubernetes deployment returned successful health, prediction, and metrics responses. The Docker container is named `heart-disease-api-local` on port 8000; the Kubernetes service was verified with `kubectl port-forward` on port 8080. Screenshot proof is included under `screenshots/`. See `report.pdf` for the latest hosted-CI proof and status. No public API URL is claimed. A short pipeline video still needs to be recorded by the submitter.
 
 This educational model is not a medical device and must not be used for clinical decisions. The Cleveland subset is small; its metrics do not establish safety, generalization, calibration, or clinical utility.

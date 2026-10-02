@@ -1,0 +1,9 @@
+﻿<!doctype html><html><head><meta charset="utf-8"><title>Docker Desktop Kubernetes rollout</title><style>body{font:18px Segoe UI,Arial,sans-serif;background:#eef3f8;color:#153047;margin:45px}h1{color:#086b75}h2{font-size:19px;margin:20px 0 6px}pre{font:17px Consolas,monospace;background:#fff;border:1px solid #cbd5e1;border-left:6px solid #118477;border-radius:8px;padding:17px;white-space:pre-wrap;line-height:1.5}.ok{color:#168354}</style></head><body><h1 class="ok">Deployment Ready · 2 / 2 Replicas</h1><h2>Kubernetes rollout</h2><pre>deployment &quot;heart-disease-api&quot; successfully rolled out
+</pre><h2>Deployment</h2><pre>NAME                READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS          IMAGES                     SELECTOR
+heart-disease-api   2/2     2            2           10m   heart-disease-api   heart-disease-api:latest   app=heart-disease-api
+</pre><h2>Ready pods</h2><pre>NAME                                 READY   STATUS    RESTARTS   AGE     IP           NODE                    NOMINATED NODE   READINESS GATES
+heart-disease-api-776cbdb88c-8rpmd   1/1     Running   0          2m59s   10.244.0.7   desktop-control-plane   &lt;none&gt;           &lt;none&gt;
+heart-disease-api-776cbdb88c-vwxtb   1/1     Running   0          2m45s   10.244.0.8   desktop-control-plane   &lt;none&gt;           &lt;none&gt;
+</pre><h2>LoadBalancer service</h2><pre>NAME                TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE   SELECTOR
+heart-disease-api   LoadBalancer   10.96.189.194   172.18.0.5    80:30729/TCP   10m   app=heart-disease-api
+</pre></body></html>

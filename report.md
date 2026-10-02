@@ -4,7 +4,7 @@
 
 **Assignment:** 01, End-to-End ML Model Development and Deployment
 
-**Project status:** Implementation and local evaluation artifacts are present; external deployment evidence remains to be collected.
+**Project status:** Implementation, local tests, Docker build/run, Docker Desktop Kubernetes deployment, API checks, and local deployment screenshots are complete. Hosted CI evidence and the requested video are not yet available.
 
 ## Executive summary
 
@@ -87,7 +87,11 @@ The `Dockerfile` uses Python 3.12 slim, installs `requirements.txt`, copies the 
 
 `k8s/deployment.yaml` declares two replicas, readiness and liveness checks against `/health`, Prometheus scrape annotations, and a `LoadBalancer` Service. The manifest references `heart-disease-api:latest`; the image must be built and made available to the selected cluster before applying it. For Minikube, the README describes loading the image and using `minikube tunnel` for the local LoadBalancer address. `monitoring/prometheus.yml` defines a scrape configuration for the API metrics endpoint.
 
-**Deployment evidence status:** no successful Docker image build/run, Kubernetes rollout, reachable service URL, Prometheus scrape, deployment screenshots, or pipeline video is included in the verified local artifacts at report preparation time. These are outstanding environment-dependent deliverables, not completed deployment claims. Before submission, run the workflow in the chosen environment, capture timestamped screenshots of the successful build/API check and cluster resources, test `/health` and `/predict` through the deployed address, and record a short end-to-end demonstration. Do not publish patient data in screenshots or logs.
+**Verified Docker deployment:** on 2 October 2026 the `heart-disease-api:latest` image built successfully and ran as `heart-disease-api-local` on host port 8000. `/health` returned `{"status":"ok","model_loaded":true}`; a sample `/predict` returned HTTP 200 with prediction 1, probability 0.7242, and confidence 0.7242; `/metrics` returned HTTP 200 with request counters and latency histograms. Screenshots are saved in `screenshots/`.
+
+**Verified Kubernetes deployment:** Docker Desktop Kubernetes context `docker-desktop` was configured and its node reached `Ready`. The `heart-disease-api` Deployment reached 2/2 available replicas; the LoadBalancer Service was assigned cluster address `172.18.0.5`. This cluster has a separate containerd image store, so the local image was imported into Kubernetes containerd and the manifest uses `imagePullPolicy: Never`. Through `kubectl port-forward service/heart-disease-api 8080:80`, `/health` returned `{"status":"ok","model_loaded":true}` and a sample `/predict` returned prediction 1 with probability/confidence 0.7242. Screenshots are saved in `screenshots/`.
+
+The API metrics endpoint works, but no Prometheus/Grafana server was launched. A hosted GitHub Actions run URL and the requested pipeline video still need to be supplied if required. No public URL is claimed. Do not publish patient data in screenshots or logs.
 
 ## 8. Reproduction and verification procedure
 
@@ -102,13 +106,13 @@ python -m src.heart_disease_mlop.train_model
 
 To run the API locally, use `uvicorn api.main:app --host 127.0.0.1 --port 8000`. Verify `/health`, submit a representative 13-feature JSON body to `/predict`, and inspect `/metrics`. To browse local MLflow runs, set `MLFLOW_ALLOW_FILE_STORE=true` and run `mlflow ui --backend-store-uri ./mlruns --host 127.0.0.1 --port 5000` (PowerShell path syntax may use `.`/`\` as in README).
 
-To verify the container and Kubernetes paths, follow the Docker and cluster commands in `README.md` from a machine with Docker Desktop and a configured Kubernetes context. Record the commands, environment, run links, and outputs so another reviewer can distinguish executed checks from documented procedures.
+The Docker build, local container checks, and Docker Desktop Kubernetes rollout above have been executed. The checked-in `pytest.ini` includes the repository root and `src` on pytest's import path so tests can import application packages in GitHub Actions as well as locally.
 
 ## 9. Limitations, safety, and next steps
 
 The Cleveland dataset is small, historical, and not established as representative of the intended deployment population. There is no data governance assessment, clinical validation, calibration study, decision-threshold analysis, fairness evaluation, drift detection, alerting policy, or human review workflow. Prometheus endpoint instrumentation provides request volume and latency signals, but it is not a complete monitoring system: it does not measure model quality or data drift and no Grafana dashboard is supplied.
 
-Before any real-world use, the project would require an appropriately governed and representative dataset, clinical and regulatory review, independent validation, calibration and subgroup analyses, privacy/security review, a defined human decision process, and ongoing monitoring with tested rollback procedures. In the assignment context, the immediate completion steps are to run and capture Docker/Kubernetes/monitoring evidence, attach the GitHub Actions run and artifacts, record the requested video, and expand or export the report to the required submission format/page count if required by the instructor.
+Before any real-world use, the project would require an appropriately governed and representative dataset, clinical and regulatory review, independent validation, calibration and subgroup analyses, privacy/security review, a defined human decision process, and ongoing monitoring with tested rollback procedures. For assignment submission, record the requested short pipeline video, configure a Kubernetes cluster and capture its rollout if required, and attach a hosted GitHub Actions run URL/artifact if required. The 10-page PDF report and local Docker API screenshots are provided.
 
 ## 10. Artifact index
 
@@ -124,4 +128,8 @@ Before any real-world use, the project would require an appropriately governed a
 | `tests/` | API and data-pipeline tests |
 | `.github/workflows/ci.yml` | Lint, test, train, EDA, and artifact-upload workflow |
 | `Dockerfile`, `k8s/deployment.yaml` | Container and Kubernetes deployment definitions |
+| `scripts/load_docker_desktop_image.ps1` | Imports the local image into Docker Desktop Kubernetes containerd |
 | `monitoring/prometheus.yml` | Prometheus scrape configuration |
+| `report.pdf`, `report.html` | Ten-page PDF submission and printable source |
+| `screenshots/` | Screenshots captured from the Docker API and Kubernetes deployment |
+| `pytest.ini` | Project and `src` import paths for local and CI tests |
