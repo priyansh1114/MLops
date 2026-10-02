@@ -1,0 +1,13 @@
+{
+  "best_model": "logistic_regression",
+  "metrics": {
+    "model_name": "logistic_regression",
+    "accuracy": 0.8852459016393442,
+    "precision": 0.8181818181818182,
+    "recall": 0.9642857142857143,
+    "f1": 0.8852459016393442,
+    "roc_auc": 0.9577922077922079,
+    "cv_roc_auc_mean": 0.904789815659381
+  },
+  "model_path": "C:\\Users\\Dell\\OneDrive\\Desktop\\Ml_1\\artifacts\\best_model.joblib"
+}
