@@ -54,6 +54,7 @@
     .evidence-pair img { width: 100%; height: 112px; object-fit: contain; background: #f5f8fb; }
     .evidence-trio { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5pt; }
     .evidence-trio img { width: 100%; height: 102px; object-fit: contain; background: #f5f8fb; }
+    .architecture { display: block; width: 100%; height: 112px; margin: 5pt 0 8pt; }
     @media screen { body { max-width: 210mm; margin: 20px auto; } .page { padding: 14mm 15mm 16mm; min-height: 267mm; border: 1px solid #e2e8f0; margin-bottom: 18px; } .footer { bottom: 0; } }
   </style>
 </head>
@@ -285,6 +286,35 @@ heart_disease_api_request_duration_seconds_count{method="POST",route="/predict"}
         <tr><td>9. Documentation &amp; reporting</td><td class="check">PDF + Markdown</td><td>This 10-page PDF, <code>report.md</code>, README, EDA and API evidence</td></tr>
       </tbody>
     </table>
+    <h3>Setup and installation</h3>
+    <p class="small">From the repository root: <code>py -3.12 -m venv .venv</code> → <code>.\.venv\Scripts\Activate.ps1</code> → <code>pip install -r requirements.txt</code>. Then run the EDA and training commands on page 3.</p>
+    <h3>Architecture</h3>
+    <svg class="architecture" viewBox="0 0 800 125" role="img" aria-labelledby="architecture-title architecture-desc">
+      <title id="architecture-title">Heart disease MLOps architecture</title>
+      <desc id="architecture-desc">UCI or checked-in data flows through EDA and preprocessing, cross-validated training, MLflow and a saved model, FastAPI, Docker, and Kubernetes. GitHub Actions runs quality checks and training; Prometheus scrapes API metrics.</desc>
+      <g fill="#eaf5f5" stroke="#087e8b" stroke-width="1.5">
+        <rect x="8" y="8" width="90" height="42" rx="5"/><rect x="112" y="8" width="100" height="42" rx="5"/>
+        <rect x="226" y="8" width="105" height="42" rx="5"/><rect x="345" y="8" width="110" height="42" rx="5"/>
+        <rect x="469" y="8" width="90" height="42" rx="5"/><rect x="573" y="8" width="90" height="42" rx="5"/>
+        <rect x="677" y="8" width="115" height="42" rx="5"/>
+        <rect x="190" y="78" width="245" height="36" rx="5"/><rect x="500" y="78" width="180" height="36" rx="5"/>
+      </g>
+      <g fill="#17243a" font-family="Segoe UI, Arial, sans-serif" font-size="11" text-anchor="middle">
+        <text x="53" y="25"><tspan x="53">UCI +</tspan><tspan x="53" dy="14">local CSV</tspan></text>
+        <text x="162" y="25"><tspan x="162">Cleaning</tspan><tspan x="162" dy="14">and EDA</tspan></text>
+        <text x="278" y="25"><tspan x="278">Preprocess</tspan><tspan x="278" dy="14">and CV models</tspan></text>
+        <text x="400" y="25"><tspan x="400">MLflow</tspan><tspan x="400" dy="14">+ joblib model</tspan></text>
+        <text x="514" y="25"><tspan x="514">FastAPI</tspan><tspan x="514" dy="14">service</tspan></text>
+        <text x="618" y="25"><tspan x="618">Docker</tspan><tspan x="618" dy="14">image</tspan></text>
+        <text x="734" y="25"><tspan x="734">Kubernetes</tspan><tspan x="734" dy="14">Deployment</tspan></text>
+        <text x="312" y="101">GitHub Actions: Ruff · tests · training · EDA</text>
+        <text x="590" y="101">Prometheus: API /metrics</text>
+      </g>
+      <g fill="none" stroke="#087e8b" stroke-width="2">
+        <path d="M98 29h12m-4-4 4 4-4 4M212 29h12m-4-4 4 4-4 4M331 29h12m-4-4 4 4-4 4M455 29h12m-4-4 4 4-4 4M559 29h12m-4-4 4 4-4 4M663 29h12m-4-4 4 4-4 4"/>
+        <path d="M278 50v17h34v9M514 50v17h76v9"/>
+      </g>
+    </svg>
     <h3>Deliverable coverage</h3>
     <p>This report maps each of the nine written and technical assignment areas to its implementation and evidence, including the code, dataset, preprocessing/training/inference scripts, tests, CI workflow, container, Kubernetes manifest, monitoring endpoint, screenshots and 10-page PDF.</p>
     <div class="warning"><strong>Limitations:</strong> the historical dataset is small; there is no external validation, calibration/fairness/drift assessment or clinical review. The local Kubernetes LoadBalancer is not a public-cloud deployment. This model must not be used for real medical decisions.</div>
