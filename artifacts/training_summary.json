@@ -2,12 +2,94 @@
   "best_model": "logistic_regression",
   "metrics": {
     "model_name": "logistic_regression",
-    "accuracy": 0.8852459016393442,
-    "precision": 0.8181818181818182,
-    "recall": 0.9642857142857143,
-    "f1": 0.8852459016393442,
-    "roc_auc": 0.9577922077922079,
-    "cv_roc_auc_mean": 0.904789815659381
+    "best_params": {
+      "model__C": 0.1
+    },
+    "cv_metrics": {
+      "accuracy": {
+        "mean": 0.8386054421768708,
+        "std": 0.025499714396631533
+      },
+      "precision": {
+        "mean": 0.8505748386311046,
+        "std": 0.05454210157374475
+      },
+      "recall": {
+        "mean": 0.7920948616600791,
+        "std": 0.04823754020752284
+      },
+      "roc_auc": {
+        "mean": 0.908195106021193,
+        "std": 0.019927874665926326
+      }
+    },
+    "accuracy": 0.8688524590163934,
+    "precision": 0.8125,
+    "recall": 0.9285714285714286,
+    "f1": 0.8666666666666667,
+    "roc_auc": 0.9632034632034633
   },
+  "model_comparison": [
+    {
+      "model_name": "logistic_regression",
+      "best_params": {
+        "model__C": 0.1
+      },
+      "cv_metrics": {
+        "accuracy": {
+          "mean": 0.8386054421768708,
+          "std": 0.025499714396631533
+        },
+        "precision": {
+          "mean": 0.8505748386311046,
+          "std": 0.05454210157374475
+        },
+        "recall": {
+          "mean": 0.7920948616600791,
+          "std": 0.04823754020752284
+        },
+        "roc_auc": {
+          "mean": 0.908195106021193,
+          "std": 0.019927874665926326
+        }
+      },
+      "accuracy": 0.8688524590163934,
+      "precision": 0.8125,
+      "recall": 0.9285714285714286,
+      "f1": 0.8666666666666667,
+      "roc_auc": 0.9632034632034633
+    },
+    {
+      "model_name": "random_forest",
+      "best_params": {
+        "model__max_depth": null,
+        "model__min_samples_leaf": 2,
+        "model__n_estimators": 100
+      },
+      "cv_metrics": {
+        "accuracy": {
+          "mean": 0.8181122448979592,
+          "std": 0.020544823052755987
+        },
+        "precision": {
+          "mean": 0.8185804783451841,
+          "std": 0.03979151090201521
+        },
+        "recall": {
+          "mean": 0.7826086956521738,
+          "std": 0.09380171999488587
+        },
+        "roc_auc": {
+          "mean": 0.9000529261398826,
+          "std": 0.021715137628780308
+        }
+      },
+      "accuracy": 0.8688524590163934,
+      "precision": 0.8125,
+      "recall": 0.9285714285714286,
+      "f1": 0.8666666666666667,
+      "roc_auc": 0.9448051948051948
+    }
+  ],
   "model_path": "C:\\Users\\Dell\\OneDrive\\Desktop\\Ml_1\\artifacts\\best_model.joblib"
 }

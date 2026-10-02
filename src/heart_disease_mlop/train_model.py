@@ -5,12 +5,25 @@ import os
 from pathlib import Path
 
 import joblib
+import matplotlib
+
+matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt
 import mlflow
-import mlflow.sklearn
+import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
-from sklearn.model_selection import StratifiedKFold, cross_val_score, train_test_split
+from sklearn.metrics import (
+    ConfusionMatrixDisplay,
+    RocCurveDisplay,
+    accuracy_score,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
+from sklearn.model_selection import GridSearchCV, StratifiedKFold, train_test_split
 from sklearn.pipeline import Pipeline
 
 try:
@@ -46,17 +59,17 @@ def train_best_model() -> Pipeline:
     )
 
     models = {
-        "logistic_regression": LogisticRegression(
-            max_iter=1000,
-            class_weight="balanced",
-            random_state=42,
+        "logistic_regression": (
+            LogisticRegression(max_iter=1000, class_weight="balanced", random_state=42),
+            {"model__C": [0.1, 1.0, 10.0]},
         ),
-        "random_forest": RandomForestClassifier(
-            n_estimators=200,
-            max_depth=None,
-            min_samples_leaf=2,
-            random_state=42,
-            class_weight="balanced",
+        "random_forest": (
+            RandomForestClassifier(class_weight="balanced", random_state=42),
+            {
+                "model__n_estimators": [100, 200],
+                "model__max_depth": [None, 6],
+                "model__min_samples_leaf": [1, 2],
+            },
         ),
     }
 
@@ -68,10 +81,11 @@ def train_best_model() -> Pipeline:
     best_name = ""
     best_results = {}
     best_pipeline = None
+    model_results = []
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
-    with mlflow.start_run(run_name="heart-disease-training") as run:
-        for name, model in models.items():
+    with mlflow.start_run(run_name="heart-disease-training"):
+        for name, (model, parameter_grid) in models.items():
             with mlflow.start_run(run_name=f"model_{name}", nested=True):
                 pipeline = Pipeline(
                     steps=[
@@ -81,41 +95,84 @@ def train_best_model() -> Pipeline:
                 )
 
                 cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-                cross_val_scores = cross_val_score(
+                search = GridSearchCV(
                     pipeline,
-                    X_train,
-                    y_train,
+                    parameter_grid,
                     cv=cv,
-                    scoring="roc_auc",
+                    scoring={
+                        "accuracy": "accuracy",
+                        "precision": "precision",
+                        "recall": "recall",
+                        "roc_auc": "roc_auc",
+                    },
+                    refit="roc_auc",
+                    n_jobs=1,
+                    return_train_score=False,
                 )
-
-                pipeline.fit(X_train, y_train)
-                metrics = evaluate_model(pipeline, X_test, y_test)
+                search.fit(X_train, y_train)
+                best_pipeline_for_model = search.best_estimator_
+                metrics = evaluate_model(best_pipeline_for_model, X_test, y_test)
+                best_index = search.best_index_
+                cv_metrics = {
+                    metric: {
+                        "mean": float(search.cv_results_[f"mean_test_{metric}"][best_index]),
+                        "std": float(search.cv_results_[f"std_test_{metric}"][best_index]),
+                    }
+                    for metric in ("accuracy", "precision", "recall", "roc_auc")
+                }
 
                 mlflow.log_params({
                     "model_name": name,
                     "test_size": 0.2,
                     "random_state": 42,
                     "cv_folds": 5,
+                    "selection_metric": "mean_cv_roc_auc",
+                    **{f"best_{key}": value for key, value in search.best_params_.items()},
                 })
                 mlflow.log_metrics({
-                    "cv_roc_auc_mean": float(cross_val_scores.mean()),
-                    "cv_roc_auc_std": float(cross_val_scores.std()),
+                    **{
+                        f"cv_{metric}_{stat}": value
+                        for metric, statistics in cv_metrics.items()
+                        for stat, value in statistics.items()
+                    },
                     **{f"{key}": float(value) for key, value in metrics.items()},
                 })
 
                 model_artifact = MODEL_DIR / f"{name}_model.joblib"
-                joblib.dump(pipeline, model_artifact)
+                joblib.dump(best_pipeline_for_model, model_artifact)
                 mlflow.log_artifact(str(model_artifact), artifact_path=f"models/{name}")
 
-                result = {"model_name": name, **metrics, "cv_roc_auc_mean": float(cross_val_scores.mean())}
-                if not best_name or result["roc_auc"] > best_results.get("roc_auc", -1):
+                evaluation_dir = MODEL_DIR / "evaluation" / name
+                evaluation_dir.mkdir(parents=True, exist_ok=True)
+                pd.DataFrame(search.cv_results_).to_csv(
+                    evaluation_dir / "grid_search_results.csv", index=False
+                )
+                figure, axes = plt.subplots(1, 2, figsize=(11, 4))
+                ConfusionMatrixDisplay.from_estimator(
+                    best_pipeline_for_model, X_test, y_test, ax=axes[0], colorbar=False
+                )
+                RocCurveDisplay.from_estimator(
+                    best_pipeline_for_model, X_test, y_test, ax=axes[1]
+                )
+                figure.tight_layout()
+                figure.savefig(evaluation_dir / "holdout_diagnostics.png", dpi=160)
+                plt.close(figure)
+                mlflow.log_artifacts(str(evaluation_dir), artifact_path=f"evaluation/{name}")
+
+                result = {
+                    "model_name": name,
+                    "best_params": search.best_params_,
+                    "cv_metrics": cv_metrics,
+                    **metrics,
+                }
+                model_results.append(result)
+                if not best_name or cv_metrics["roc_auc"]["mean"] > best_results["cv_metrics"]["roc_auc"]["mean"]:
                     best_name = name
                     best_results = result
-                    best_pipeline = pipeline
+                    best_pipeline = best_pipeline_for_model
 
         mlflow.log_param("best_model", best_name)
-        mlflow.log_metric("best_roc_auc", float(best_results["roc_auc"]))
+        mlflow.log_metric("best_cv_roc_auc", best_results["cv_metrics"]["roc_auc"]["mean"])
 
     if best_pipeline is None:
         raise RuntimeError("No valid model trained.")
@@ -127,6 +184,7 @@ def train_best_model() -> Pipeline:
     summary = {
         "best_model": best_name,
         "metrics": best_results,
+        "model_comparison": model_results,
         "model_path": str(model_path),
     }
     (MODEL_DIR / "training_summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")

@@ -11,6 +11,10 @@ spec:
     metadata:
       labels:
         app: heart-disease-api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8000"
     spec:
       containers:
         - name: heart-disease-api
@@ -18,6 +22,18 @@ spec:
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
           env:
             - name: PYTHONPATH
               value: /app:/app/src

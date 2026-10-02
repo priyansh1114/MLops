@@ -11,6 +11,15 @@ def test_health_endpoint():
     assert response.json()["status"] == "ok"
 
 
+def test_metrics_endpoint_exposes_request_metrics():
+    client.get("/health")
+    response = client.get("/metrics")
+
+    assert response.status_code == 200
+    assert "heart_disease_api_requests_total" in response.text
+    assert "heart_disease_api_request_duration_seconds" in response.text
+
+
 def test_predict_endpoint():
     payload = {
         "age": 52,

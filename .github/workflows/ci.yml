@@ -24,8 +24,27 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Lint
+        run: |
+          pip install ruff
+          ruff check --select E4,E7,E9,F src api tests
+
       - name: Run unit tests
         run: pytest -q
 
       - name: Train model for validation
         run: python -m src.heart_disease_mlop.train_model
+
+      - name: Generate EDA artifacts
+        run: python -m src.heart_disease_mlop.eda
+
+      - name: Upload run artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: heart-disease-mlops-artifacts
+          path: |
+            artifacts/
+            mlruns/
+          if-no-files-found: warn
+          retention-days: 14
