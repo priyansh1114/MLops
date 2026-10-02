@@ -4,7 +4,7 @@
 
 **Assignment:** 01, End-to-End ML Model Development and Deployment
 
-**Project status:** Implementation, local tests, Docker build/run, Docker Desktop Kubernetes deployment, API checks, and local deployment screenshots are complete. Hosted CI evidence and the requested video are not yet available.
+**Project status:** Implementation, local tests, Docker build/run, Docker Desktop Kubernetes deployment, API checks, GitHub Actions, and deployment screenshots are complete. The requested user-recorded video is still not available.
 
 ## Executive summary
 
@@ -59,7 +59,7 @@ Install dependencies from `requirements.txt`. The README documents Python 3.12 s
 
 The request middleware logs method, route, status, and duration. It deliberately does not log patient feature values. Pydantic constraints reject out-of-range coded values and negative measurements. The unit tests exercise health, prediction response shape, and metric exposure; data-pipeline tests cover data preparation behavior.
 
-The GitHub Actions workflow installs the declared dependencies, runs Ruff checks and pytest, then trains a model and generates EDA outputs. It uploads artifacts and MLflow files even when earlier steps fail, where available. The workflow is configured for pushes and pull requests to `main` and `master`. A green local test run does not itself establish that a hosted GitHub Actions run succeeded; retain the workflow run URL and artifact download as submission evidence.
+The GitHub Actions workflow installs the declared dependencies, runs Ruff checks and pytest, then trains a model and generates EDA outputs. It uploads artifacts and MLflow files even when earlier steps fail, where available. The workflow is configured for pushes and pull requests to `main` and `master`. The first hosted run failed test collection because the project root and `src` were not on pytest's import path; `pytest.ini` now declares both paths. Corrected run [#3 passed](https://github.com/priyansh1114/MLops/actions/runs/36990342754), including lint, all five tests, model training, EDA, and artifact upload. Its [heart-disease-mlops-artifacts bundle](https://github.com/priyansh1114/MLops/actions/runs/36990342754/artifacts/11219112502) is retained until 16 October 2026. A screenshot of the completed Actions run is in `screenshots/github-actions-run.png`.
 
 ## 6. Architecture
 
@@ -91,7 +91,7 @@ The `Dockerfile` uses Python 3.12 slim, installs `requirements.txt`, copies the 
 
 **Verified Kubernetes deployment:** Docker Desktop Kubernetes context `docker-desktop` was configured and its node reached `Ready`. The `heart-disease-api` Deployment reached 2/2 available replicas; the LoadBalancer Service was assigned cluster address `172.18.0.5`. This cluster has a separate containerd image store, so the local image was imported into Kubernetes containerd and the manifest uses `imagePullPolicy: Never`. Through `kubectl port-forward service/heart-disease-api 8080:80`, `/health` returned `{"status":"ok","model_loaded":true}` and a sample `/predict` returned prediction 1 with probability/confidence 0.7242. Screenshots are saved in `screenshots/`.
 
-The API metrics endpoint works, but no Prometheus/Grafana server was launched. A hosted GitHub Actions run URL and the requested pipeline video still need to be supplied if required. No public URL is claimed. Do not publish patient data in screenshots or logs.
+The API metrics endpoint works, but no Prometheus/Grafana server was launched. The requested short pipeline video still needs to be recorded if required. No public URL is claimed. Do not publish patient data in screenshots or logs.
 
 ## 8. Reproduction and verification procedure
 
@@ -112,7 +112,7 @@ The Docker build, local container checks, and Docker Desktop Kubernetes rollout 
 
 The Cleveland dataset is small, historical, and not established as representative of the intended deployment population. There is no data governance assessment, clinical validation, calibration study, decision-threshold analysis, fairness evaluation, drift detection, alerting policy, or human review workflow. Prometheus endpoint instrumentation provides request volume and latency signals, but it is not a complete monitoring system: it does not measure model quality or data drift and no Grafana dashboard is supplied.
 
-Before any real-world use, the project would require an appropriately governed and representative dataset, clinical and regulatory review, independent validation, calibration and subgroup analyses, privacy/security review, a defined human decision process, and ongoing monitoring with tested rollback procedures. For assignment submission, record the requested short pipeline video, configure a Kubernetes cluster and capture its rollout if required, and attach a hosted GitHub Actions run URL/artifact if required. The 10-page PDF report and local Docker API screenshots are provided.
+Before any real-world use, the project would require an appropriately governed and representative dataset, clinical and regulatory review, independent validation, calibration and subgroup analyses, privacy/security review, a defined human decision process, and ongoing monitoring with tested rollback procedures. For assignment submission, record the requested short pipeline video if required. The 10-page PDF report, local Docker and Kubernetes screenshots, hosted CI run URL, and run artifact are provided.
 
 ## 10. Artifact index
 
