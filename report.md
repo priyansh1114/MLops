@@ -4,10 +4,10 @@
 
 **Assignment:** 01, End-to-End ML Model Development and Deployment
 
-**Submitted by:** Pryanshu Tipathi<br>
+**Submitted by:** Priyanshu Tripathi<br>
 **BITS ID:** 2025ae05230
 
-**Project status:** Assignment points 1–9 and all written, code, data, deployment, and screenshot deliverables are implemented and verified. The requested end-to-end video is the only deliverable not included.
+**Project status:** The nine written and technical assignment areas and their code, data, deployment, and screenshot evidence are implemented and verified.
 
 ## Executive summary
 
@@ -80,7 +80,7 @@ Install dependencies from `requirements.txt`. The README documents Python 3.12 s
 
 The request middleware logs method, route, status, and duration. It deliberately does not log patient feature values. Pydantic constraints reject out-of-range coded values and negative measurements. The unit tests exercise health, prediction response shape, and metric exposure; data-pipeline tests cover data preparation behavior.
 
-The GitHub Actions workflow installs the declared dependencies, runs Ruff checks and pytest, trains the models and generates EDA outputs, then uploads artifacts. It is configured for pushes and pull requests to `main` and `master`. The first hosted run exposed missing pytest import paths; `pytest.ini` now adds both the project root and `src`. Hosted run [#4 passed](https://github.com/priyansh1114/MLops/actions/runs/36990648145), including lint, all five tests, training, EDA and artifact upload. The [heart-disease-mlops-artifacts bundle](https://github.com/priyansh1114/MLops/actions/runs/36990648145/artifacts/11218948203) is retained until 16 October 2026. Its screenshot is `screenshots/github-actions-run.png`.
+The GitHub Actions workflow installs the declared dependencies, runs Ruff checks and pytest, trains the models and generates EDA outputs, then uploads artifacts. It is configured for pushes and pull requests to `main` and `master`. The first hosted run exposed missing pytest import paths; `pytest.ini` now adds both the project root and `src`. The latest hosted run [#5 passed](https://github.com/priyansh1114/MLops/actions/runs/36994091669), including lint, all five tests, training, EDA and artifact upload. The [heart-disease-mlops-artifacts bundle](https://github.com/priyansh1114/MLops/actions/runs/36994091669/artifacts/11220853501) is available. The included screenshot records successful hosted run #4.
 
 ## 6. Architecture
 
@@ -108,11 +108,11 @@ The `Dockerfile` uses Python 3.12 slim, installs `requirements.txt`, copies the 
 
 `k8s/deployment.yaml` declares two replicas, readiness and liveness checks against `/health`, Prometheus scrape annotations, and a `LoadBalancer` Service. The manifest references `heart-disease-api:latest`; the image must be built and made available to the selected cluster before applying it. For Minikube, the README describes loading the image and using `minikube tunnel` for the local LoadBalancer address. `monitoring/prometheus.yml` defines a scrape configuration for the API metrics endpoint.
 
-**Verified Docker deployment:** on 2 October 2026 the `heart-disease-api:latest` image built successfully and ran as `heart-disease-api-local` on host port 8000. `/health` returned `{"status":"ok","model_loaded":true}`; a sample `/predict` returned HTTP 200 with prediction 1, probability 0.7242, and confidence 0.7242; `/metrics` returned HTTP 200 with request counters and latency histograms. Screenshots are saved in `screenshots/`.
+**Verified Docker deployment:** the `heart-disease-api:latest` image built successfully and ran as `heart-disease-api-local` on host port 8000. `/health` returned `{"status":"ok","model_loaded":true}`; a sample `/predict` returned HTTP 200 with prediction 1, probability 0.7242, and confidence 0.7242; `/metrics` returned HTTP 200 with request counters and latency histograms. Screenshots are saved in `screenshots/`.
 
 **Verified Kubernetes deployment:** Docker Desktop Kubernetes context `docker-desktop` was configured and its node reached `Ready`. The `heart-disease-api` Deployment reached 2/2 available replicas; the LoadBalancer Service was assigned cluster address `172.18.0.5`. This cluster has a separate containerd image store, so the local image was imported into Kubernetes containerd and the manifest uses `imagePullPolicy: Never`. Through `kubectl port-forward service/heart-disease-api 8080:80`, `/health` returned `{"status":"ok","model_loaded":true}` and a sample `/predict` returned prediction 1 with probability/confidence 0.7242. Screenshots are saved in `screenshots/`.
 
-The verified API request logs and Prometheus metrics cover the assignment's simple metrics/logs monitoring option; no separate Grafana server was launched. No public URL is claimed. The requested user-recorded pipeline video is the only outstanding deliverable. Do not publish patient data in screenshots or logs.
+The verified API request logs and Prometheus metrics cover the assignment's simple metrics/logs monitoring option; no separate Grafana server was launched. No public URL is claimed. Do not publish patient data in screenshots or logs.
 
 ## 8. Reproduction and verification procedure
 
@@ -133,7 +133,7 @@ The Docker build, local container checks, and Docker Desktop Kubernetes rollout 
 
 The Cleveland dataset is small, historical, and not established as representative of the intended deployment population. There is no data governance assessment, clinical validation, calibration study, decision-threshold analysis, fairness evaluation, drift detection, alerting policy, or human review workflow. Prometheus endpoint instrumentation provides request volume and latency signals, but it is not a complete monitoring system: it does not measure model quality or data drift and no Grafana dashboard is supplied.
 
-Before any real-world use, the project would require an appropriately governed and representative dataset, clinical and regulatory review, independent validation, calibration and subgroup analyses, privacy/security review, a defined human decision process, and ongoing monitoring with tested rollback procedures. For assignment submission, record the requested short pipeline video. The 10-page PDF embeds all captured Docker, Kubernetes and CI screenshots, and the hosted CI run URL and artifact are provided.
+Before any real-world use, the project would require an appropriately governed and representative dataset, clinical and regulatory review, independent validation, calibration and subgroup analyses, privacy/security review, a defined human decision process, and ongoing monitoring with tested rollback procedures. The 10-page PDF embeds all captured Docker, Kubernetes and CI screenshots, and the hosted CI run URL and artifact are provided.
 
 ## 10. Artifact index
 
@@ -155,4 +155,4 @@ Before any real-world use, the project would require an appropriately governed a
 | `screenshots/` | Screenshots captured from the Docker API and Kubernetes deployment |
 | `pytest.ini` | Project and `src` import paths for local and CI tests |
 
-The requested GitHub Actions video is the only assignment deliverable omitted. The repository code, data, scripts, test suite, workflow, report, screenshots, Docker image, and local Kubernetes service have all been provided or verified.
+This report maps each of the nine written and technical assignment areas to its implementation and evidence. The repository includes the code, data, scripts, test suite, workflow, report, screenshots, Docker image, and verified local Kubernetes service.

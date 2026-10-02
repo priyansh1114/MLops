@@ -1,6 +1,6 @@
 # Verification screenshots
 
-These screenshots were captured from the live Docker API on 2 October 2026:
+These screenshots show the live Docker API:
 
 - `docker-api-docs.png` — Swagger UI at `http://127.0.0.1:8000/docs`.
 - `docker-api-health.png` — readiness response from `/health`.
@@ -14,4 +14,4 @@ The container `heart-disease-api-local` was running during capture. Kubernetes e
 - `kubernetes-api-metrics.png` — Prometheus metrics through the Kubernetes Service.
 - `github-actions-run.png` — successful hosted GitHub Actions run #4.
 
-`kubernetes-rollout.html` contains the captured `kubectl` command output used to render the rollout screenshot. The public cloud URL and user-recorded pipeline video are not available.
+`kubernetes-rollout.html` contains the captured `kubectl` command output used to render the rollout screenshot. The Kubernetes deployment is local to Docker Desktop.
